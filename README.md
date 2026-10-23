@@ -1,55 +1,65 @@
-# HomeKey
+# samsung-tizen-homekey
 
-A minimal rule-carrier TPK for Samsung Tizen 5.x TVs that routes the remote's
-**Home button** to a custom launcher (in our case, the CleanFrame fork).
+A minimal rule-carrier TPK for Samsung **Tizen 5.x** TVs that routes the
+remote's **Home button** to a custom launcher. One rule, one package, nothing
+else: `XF86Home → launch <your launcher>`.
 
-## Why this exists
+Current package version: **1.0.0** (see `tizen-manifest.xml`).
 
-On Tizen 5.x retail firmware:
+## Tested on
 
-- The Home key (`XF86Home`) is routed by an **app-context key rule**, and the
-  platform only registers such rules from **TPK manifests** — a WGT (web app)
-  manifest is silently ignored.
-- The rule's target can be *another app*, so this package exists only to carry
-  one rule: `XF86Home → launch <launcher>`.
+| Device | Firmware build | Platform |
+| --- | --- | --- |
+| Samsung QN55Q90TAFXZC (2020 Q90T) | `T-NKMAKUC-REL-202505100505` | Tizen 5.5.0, armv7 |
 
-The stub binary never runs (the service is never launched); it only exists
-because the manifest's `exec` must reference a file. A ~0-byte file may not
-pass the installer's capp validation, so we ship a real static ELF.
+Verified: the rule registers in `/opt/dbspace/.app-context.db` →
+`key_filter` at install time, and the Home button opens the launcher from
+apps and inputs. Samsung's own Home rule fires alongside ours, so the Smart
+Hub flashes briefly first.
 
-## Install
+## Why this package exists
 
-Sideload the unsigned `homekey.tpk` (see `build.sh`) through
-[Apps2Samsung](https://apps2samsung.com) (or sign it yourself — the rule
-needs no special privilege level; a public signing is accepted).
+On Tizen 5.x retail firmware, the Home key is routed by an **app-context key
+rule**, and the platform registers such rules **only from TPK manifests** —
+the same block in a WGT (web app) manifest is silently ignored. The rule's
+target can be any app, so this package exists solely to carry the rule.
+
+The stub binary is never executed (the service is never launched); it exists
+because the manifest's `exec` must reference a real file, and the installer
+validates the capp type.
 
 ## Build
 
+Requires [zig](https://ziglang.org) (`brew install zig`).
+
 ```sh
-./build.sh          # requires zig; produces homekey.tpk
+./build.sh          # produces homekey.tpk (unsigned)
 ```
 
-## How it works
+## Install
 
-The manifest registers, at install time, into the platform's
-`/opt/dbspace/.app-context.db` → `key_filter`:
+Sideload `homekey.tpk` through [Apps2Samsung](https://apps2samsung.com), which
+signs and installs it. A public-level signing is sufficient — the rule needs
+no special privilege.
 
+## Retarget to your launcher
+
+Edit the `<target>` element in `tizen-manifest.xml`:
+
+```xml
+<target selector="app" request="launch" args="entry_point:home">YOUR.APP.ID</target>
 ```
-HomeKeyRu1.HomeKey | XF86Home | launch | package:nClrkHome1.FrameHome
-```
 
-The target `package:` is the launcher's app id. To retarget, edit
-`tizen-manifest.xml` (the `<target>` element) and reinstall.
-
-The Samsung Home rule still fires alongside ours, so the Smart Hub flashes
-briefly before the launcher takes over. Removing Samsung's own rule needs
-platform-level access we don't have.
+Rebuild and reinstall. Keep the package/app identity stable once installed.
 
 ## Uninstall / rollback
 
-Uninstall HomeKey from the TV's app management — the rule is removed with the
-package and the Home button reverts to Samsung Home.
+Uninstall HomeKey from the TV's app management (or `pkgcmd` through the app
+framework's path — not as the sdk user). The rule is removed with the package
+and the Home button reverts to Samsung Home.
 
-## Reference TV
+## For AI agents
 
-QN55Q90TAFXZC, T-KNMAKUC-REL-202505100505, Tizen 5.5.0, armv7.
+Read `AGENTS.md` first. The invariants that matter: this package's only job is
+the one key rule; the identity `HomeKeyRu1.HomeKey` must stay stable for a
+given TV; and changing the rule's target is the only supported edit.

@@ -18,7 +18,6 @@
 #define V4L2_CID_DV_CLASS_BASE (V4L2_CTRL_CLASS_DV | 0x900)
 #define V4L2_CID_DV_G_EDID     (V4L2_CID_DV_CLASS_BASE + 174)
 #define VIDIOC_G_EXT_CTRLS     _IOWR('V', 71, struct v4l2_ext_controls)
-#define O_RDWR                 2
 
 struct v4l2_ext_control {
     uint32_t id;
