@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns="http://tizen.org/ns/packages" api-version="4.0" package="HomeKeyRu1" version="1.0.0">
+  <profile name="common" />
+  <service-application appid="HomeKeyRu1.HomeKey" exec="homekey-stub" type="capp" multiple="false" taskmanage="false" nodisplay="true" on-boot="false">
+    <label>HomeKey</label>
+    <icon>homekey.png</icon>
+  </service-application>
+  <app-context appid="HomeKeyRu1.HomeKey">
+    <app-context-rule>
+      <source selector="key">XF86Home</source>
+      <target selector="app" request="launch" args="entry_point:home">nClrkHome1.FrameHome</target>
+    </app-context-rule>
+  </app-context>
+  <shortcut-list />
+  <privileges>
+    <privilege>http://tizen.org/privilege/appmanager.launch</privilege>
+  </privileges>
+</manifest>
